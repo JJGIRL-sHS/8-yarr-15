@@ -1,8 +1,6 @@
 import streamlit as st
 import serial
 
-from google import genai
-from google.genai import types
 
 from datetime import datetime
 import time
@@ -16,10 +14,6 @@ from dotenv import load_dotenv
 # [구역 1] 환경 설정
 # =========================================================
 
-load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-MODEL_NAME = "gemini-2.5-flash"
-
 st.set_page_config(page_title="8일간의 아두이노", layout="wide")
 
 
@@ -27,23 +21,11 @@ st.set_page_config(page_title="8일간의 아두이노", layout="wide")
 # [구역 2] 리소스 및 외부 연결 관리
 # =========================================================
 
-@st.cache_resource
-def get_client():
-    load_dotenv()
-    api_key = os.getenv("GEMINI_API_KEY")
-
-    if not api_key:
-        st.error("🔑API 키가 설정되지 않았습니다.")
-        st.stop()
-
-    return genai.Client(api_key=api_key)
-
-client = get_client()
 
 @st.cache_resource
 def get_ser(port):
     try:
-        return serial.Serial(port, 115200, timeout=1)
+        return serial.Serial(port, 9600, timeout=1)
     except:
         return None
 
@@ -64,44 +46,19 @@ else:
 if "raw_data" not in st.session_state:
     st.session_state.raw_data = []
 
-if "angle" not in st.session_state:
-    st.session_state.angle = 90
+if "soil_moisture" not in st.session_state:
+    st.session_state.soil_moisture = None
 
-if "last_sent_angle" not in st.session_state:
-    st.session_state.last_sent_angle = 90
+if "temperature" not in st.session_state:
+    st.session_state.temperature = None
 
-if "current_light" not in st.session_state:
-    st.session_state.current_light = 0
+if "status" not in st.session_state:
+    st.session_state.status = None
 
 
 # =========================================================
 # [구역 4] AI 에이전트 및 도구(Tools) 정의
 # =========================================================
-
-def load_system_prompt(file_name):
-    file_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(file_dir, file_name)
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        st.error(f"{file_path}를 찾을 수 없습니다.")
-        st.stop()
-
-if "chat_session" not in st.session_state:
-    system_prompt = load_system_prompt("system_prompt.md")
-    tool_list = []
-    st.session_state.chat_session = client.chats.create(
-        model=MODEL_NAME,
-        config= types.GenerateContentConfig(
-            system_instruction=system_prompt,
-            tools= tool_list,
-            automatic_function_calling=types.AutomaticFunctionCallingConfig(
-                disable=False,
-                maximum_remote_calls=7,
-            )
-        ),
-    )
 
 
 # =========================================================
@@ -109,13 +66,52 @@ if "chat_session" not in st.session_state:
 # =========================================================
 
 
+def fetch_data():
+    ser = st.session_state.ser
+    while ser and ser.is_open and ser.in_waiting > 0:
+        try:
+            message = ser.readline().decode("utf-8").strip() 
+            
+            if not message or not message.startswith('{') or not message.endswith('}'):
+                continue
+
+            payload = json.loads(message)
+
+            soil_moisture = payload["soil_moisture"]
+            temperature = payload["temperature"]
+            status = payload["status"]
+            
+            st.session_state.raw_data.append({
+                    "time": datetime.now(),
+                    "soil_moisture": soil_moisture,
+                    "temperature": temperature,
+                    "status": status
+            })
+
+            st.session_state.soil_moisture = soil_moisture
+            st.session_state.temperature = temperature
+            st.session_state.status = status
+
+            
+        except json.JSONDecodeError as e:
+            continue
+        except Exception as e:
+            print(e)
+
+with st.sidebar:
+    @st.fragment(run_every="1s")
+    def collect_data():
+        fetch_data()
+        
+
+    collect_data()
+
 # =========================================================
 # [구역 6] 페이지 내비게이션 및 앱 실행
 # =========================================================
 
 pages = [
     st.Page("dashboard.py", title="대시보드", icon=":material/dashboard:", default=True),
-    st.Page("chatbot.py", title="챗봇", icon=":material/smart_toy:"),
     st.Page("control.py", title="수동 제어", icon=":material/adjust:"),
 ]
 
