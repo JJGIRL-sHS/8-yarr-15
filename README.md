@@ -1,37 +1,65 @@
-# 🚀 8일간의 아두이노
+# 🌱 식물 돌봄 시스템
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Arduino](https://img.shields.io/badge/Arduino-00979D?style=flat-square&logo=arduino&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
-![Gemini API](https://img.shields.io/badge/Gemini_API-8E75B2?style=flat-square&logo=google&logoColor=white)
 
-> *"데이터에 마음을 담다: AI와 대화하는 스마트 홈 시스템"*
+> *"바쁜 일상 속 식물을 돌보지 못해 식물이 죽는 것을 방지하기 위함."*
 
-**파이썬(Python)과 아두이노(Arduino), 그리고 Gemini AI를 융합한 나만의 스마트 IoT 서비스 개발 프로젝트입니다.**
+## 프로젝트 개요
 
-이 레포지토리는 8일간 진행되는 **[스마트 IoT 서비스]** 실습을 위한 기본 템플릿입니다. 
-학생들은 이곳에 준비된 뼈대 코드를 바탕으로 단순한 하드웨어 제어를 넘어, 웹(Web) 화면에서 센서 데이터를 실시간으로 시각화하고 인공지능 챗봇과 대화하며 하드웨어를 제어하는 **풀스택 양방향 IoT 시스템**을 직접 완성하게 됩니다.
+토양 수분 센서로 식물의 상태를 실시간으로 감지하고, 흙이 마르면 워터펌프로 **자동 급수**하며, 웹 대시보드로 상태를 **모니터링**하는 스마트 화분 시스템입니다.
+
+아두이노가 센서 값을 읽어 식물 상태를 판별하고, 파이썬(Streamlit) 대시보드가 시리얼 통신(JSON)으로 데이터를 주고받으며 시각화와 펌프 제어를 담당합니다.
+
+- 🌱 **상태 감지** — 토양 수분으로 `THIRSTY · FINE · OVERFLOW` 3단계 판별, 상태 LED와 I2C LCD로 즉시 표시
+- 💧 **자동 급수** — 건조 감지 시 워터펌프 2초 작동, 30초 쿨다운으로 과습 방지
+- 📊 **실시간 대시보드** — Streamlit으로 수분·온도 추세, 이동평균, 통계 시각화
+
+### 동기
+
+> 바쁜 일상 속 식물을 돌보지 못해 식물이 죽는 것을 방지하기 위함.
+
+물 주는 것을 자주 잊고, 흙 속의 적정 수분량은 눈으로 판단하기 어렵습니다. 과습과 건조가 반복되면 식물은 쉽게 죽습니다. 센서와 워터펌프로 이 과정을 자동화해, 자리를 비워도 식물이 마르지 않도록 합니다.
+
+### 해결방안
+
+처음에는 센서 6종·액추에이터 4종(총 10개 부품)을 구상했지만, 전력 설계 부담과 디버깅 난이도를 고려해 **핵심 3가지 기능부터 검증하고 확장**하는 방향으로 좁혔습니다.
+
+1. **토양 수분 감지 · 상태 판별** — 토양 수분 센서값으로 식물 상태를 3단계로 판별합니다. (`> 950` 건조 / `< 300` 과습 / 그 외 정상) 판별 결과는 상태 LED와 I2C LCD에 즉시 표시됩니다.
+2. **자동 급수** — 건조(`THIRSTY`) 상태를 감지하면 릴레이로 워터펌프를 2초간 작동시켜 급수하고, 30초 쿨다운으로 과습을 방지합니다.
+3. **실시간 대시보드** — 아두이노가 1초마다 보내는 JSON 데이터를 Streamlit 대시보드가 받아 수분·온도 추세, 이동평균, 통계, 원본 데이터를 시각화하고 자동 급수를 제어합니다.
+
+### 회로도
+
+![식물 돌봄 시스템 회로 연결도](docs/circuit.svg)
+
+### 사용 부품
+
+| 부품 | 핀 | 역할 |
+|---|---|---|
+| 토양 수분 센서 | A0 | 흙의 수분량 측정 |
+| DHT11 온습도 센서 | D2 | 온도 측정 |
+| 릴레이 모듈 (워터펌프) | D10 | 펌프 ON/OFF 제어 |
+| 빨강 LED | D3 | 과습(OVERFLOW) 표시 |
+| 노랑 LED | D4 | 건조(THIRSTY) 표시 |
+| 초록 LED | D5 | 정상(FINE) 표시 |
+| I2C LCD (16x2) | I2C (0x27) | 상태·수분·온도 표시 |
 
 
 ## 🛠️ 환경 설정 및 프로그램 설치 (Setup)
-본 프로젝트는 하드웨어(Arduino)와 소프트웨어(Python, AI)가 만나는 과정입니다. 원활한 실습을 위해 아래 순서대로 설정을 완료해 주세요.
 
-### 1. 필수 소프트웨어 설치 (Standard Tools)
-가장 먼저 코딩을 위한 기본적인 도구들을 설치해야 합니다. 각 링크를 클릭하여 본인의 운영체제(Windows/macOS)에 맞는 버전을 설치하세요.
+### 1. 아두이노 라이브러리 설치
 
-1. [Arduino IDE](https://www.arduino.cc/en/software/): 아두이노 보드에 회로 제어 코드를 작성하고 업로드하는 도구입니다.
+#### 사용한 라이브러리
 
-2. [아두이노 드라이버 설치 (USB Driver)](https://www.wch-ic.com/downloads/CH341SER_EXE.html) : 컴퓨터가 아두이노 보드를 올바르게 인식하고 서로 통신할 수 있도록 도와주는 필수 도구입니다.
-    
-    💡 팁: 보드를 연결했는데 포트(Port)가 뜨지 않는다면 이 드라이버를 반드시 설치해야 합니다.
+- [ArduinoJson 7](https://arduinojson.org/) — 아두이노 ↔ 파이썬 JSON 통신
+- [DHT sensor library](https://github.com/adafruit/DHT-sensor-library) — DHT11 온습도 센서
+- [LiquidCrystal_I2C](https://github.com/johnrickman/LiquidCrystal_I2C) — I2C LCD(16x2) 출력
+- `Wire` — I2C 통신 (아두이노 IDE 기본 내장, 별도 설치 불필요)
 
-3. [Python (3.12 이상)](https://www.python.org/downloads/): 데이터 처리와 AI 통신을 담당합니다.
 
-    ⚠️ 주의: 설치 시 [Add Python to PATH] 체크박스를 반드시 선택하세요! (선택 안 하면 터미널에서 실행이 안 됩니다.)
-
-4. [VS Code (Visual Studio Code)](https://code.visualstudio.com/): 우리가 코드를 작성하고 실행할 메인 에디터입니다.
-
-### 3. 파이썬 라이브러리 설치 (Libraries)
+### 2. 파이썬 라이브러리 설치 (Libraries)
 VS Code의 터미널(Terminal)창을 열고 아래 명령어를 복사해서 붙여넣으세요. 이 과정에서 필요한 모든 라이브러리가 자동으로 설치됩니다.
 
 ```Bash
@@ -47,7 +75,6 @@ requirements.txt 파일에는 우리가 사용할 아래의 도구들이 들어�
 ```
 streamlit==1.55.0
 pyserial==3.5
-google-genai==1.68.0
 pandas==2.3.3
 python-dotenv==1.2.2
 watchdog==6.0.0
@@ -58,20 +85,9 @@ watchdog==6.0.0
 
 - `pyserial`: 아두이노와 파이썬 사이의 대화 통로를 엽니다.
 
-- `google-genai`: 최신 Gemini AI와 연결하여 챗봇 기능을 구현하고 하드웨어를 지능적으로 제어합니다.
-
 - `python-dotenv`: API 키와 같은 민감한 비밀 정보를 코드와 분리하여 안전하게 관리합니다.
 
 - `watchdog`: 코드나 파일의 변화를 감시하여 대시보드에 즉각 반영되도록 돕습니다.
-
-### 4. Gemini API 키 발급 (AI Access)
-인공지능과 대화하기 위해 나만의 '열쇠'를 준비해야 합니다.
-
-1. Google AI Studio에 접속합니다.
-2. 'Create API key' 버튼을 눌러 본인만의 키를 발급받습니다.
-3. 발급받은 키는 메모장에 따로 복사해 두세요. (절대 타인에게 공유하지 마세요!)
-
-⚠️ 주의: 이 키는 여러분의 소중한 개인 정보와 같습니다. 수업 시간에 선생님과 함께 안전하게 등록할 예정이니, 그전까지는 외부(GitHub 등)에 절대 노출되지 않도록 주의하세요!
 
 ## ⚡ 프로젝트 실행 방법 (How to Run)
 

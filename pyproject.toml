@@ -5,7 +5,6 @@ description = "An 8-day journey with Arduino and Streamlit, exploring real-time 
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "google-genai>=1.68.0",
     "pandas>=2.3.3",
     "pyserial>=3.5",
     "python-dotenv>=1.2.2",
