@@ -89,12 +89,8 @@ is_auto = st.toggle("자동 제어")
 
 @st.fragment(run_every="1s")
 def pouring_water():
-    if not st.session_state.raw_data:
-        return
     
-    # 최신 상태를 가져옵니다.
-    df = pd.DataFrame(st.session_state.raw_data)
-    current_status = df["status"].iloc[-1]
+    current_status = st.session_state.status
 
     if current_status == "THIRSTY":
         current_time = time.time()
