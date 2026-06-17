@@ -1,0 +1,74 @@
+<svg viewBox="0 0 820 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl desc">
+  <title id="ttl">식물 돌봄 시스템 회로 연결도</title>
+  <desc id="desc">아두이노 우노 중심으로 토양 수분 센서(A0)와 DHT11 온습도 센서(D2)가 입력으로, I2C LCD(A4/A5), 릴레이·워터펌프(D10), 상태 LED 3개(D3·D4·D5)가 출력으로 연결된 배선도.</desc>
+  <style>
+    .lbl{font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;fill:#1E293B;font-weight:600}
+    .sub{font-family:'Segoe UI',system-ui,sans-serif;font-size:11px;fill:#64748B}
+    .leg{font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;fill:#475569}
+    .wire{stroke:#94A3B8;stroke-width:2;fill:none}
+    .pin{font-family:ui-monospace,Menlo,monospace;font-size:11px;fill:#ffffff;font-weight:700}
+  </style>
+
+  <rect x="0" y="0" width="820" height="560" rx="16" fill="#FBFCFE" stroke="#E2E8F0"/>
+
+  <!-- title + legend -->
+  <text x="32" y="38" font-family="'Segoe UI',system-ui,sans-serif" font-size="17" font-weight="700" fill="#0F172A">회로 연결도</text>
+  <rect x="520" y="26" width="14" height="14" rx="3" fill="#fff" stroke="#60A5FA" stroke-width="2"/>
+  <text x="540" y="38" class="leg">입력 (센서)</text>
+  <rect x="640" y="26" width="14" height="14" rx="3" fill="#fff" stroke="#34D399" stroke-width="2"/>
+  <text x="660" y="38" class="leg">출력 (표시·구동)</text>
+
+  <!-- wires (behind boxes) -->
+  <path class="wire" d="M230,182 L330,222"/>
+  <path class="wire" d="M230,342 L330,318"/>
+  <path class="wire" d="M490,222 L590,182"/>
+  <path class="wire" d="M490,320 L590,320"/>
+  <path class="wire" d="M695,348 L695,372"/>
+  <path class="wire" d="M360,365 L300,447"/>
+  <path class="wire" d="M410,365 L410,447"/>
+  <path class="wire" d="M460,365 L520,447"/>
+
+  <!-- Arduino -->
+  <rect x="330" y="185" width="160" height="180" rx="12" fill="#0B7C84" stroke="#075E63" stroke-width="2"/>
+  <text x="410" y="270" text-anchor="middle" font-family="'Segoe UI',system-ui,sans-serif" font-size="21" font-weight="700" fill="#ffffff">Arduino</text>
+  <text x="410" y="296" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="14" letter-spacing="3" fill="#BAE8EA">UNO</text>
+
+  <!-- input boxes -->
+  <rect x="20" y="150" width="210" height="64" rx="10" fill="#ffffff" stroke="#60A5FA" stroke-width="2"/>
+  <text x="125" y="180" text-anchor="middle" class="lbl">토양 수분 센서</text>
+  <text x="125" y="200" text-anchor="middle" class="sub">흙의 수분량 측정</text>
+
+  <rect x="20" y="310" width="210" height="64" rx="10" fill="#ffffff" stroke="#60A5FA" stroke-width="2"/>
+  <text x="125" y="340" text-anchor="middle" class="lbl">DHT11 온습도 센서</text>
+  <text x="125" y="360" text-anchor="middle" class="sub">온도 측정</text>
+
+  <!-- output boxes -->
+  <rect x="590" y="150" width="210" height="64" rx="10" fill="#ffffff" stroke="#34D399" stroke-width="2"/>
+  <text x="695" y="180" text-anchor="middle" class="lbl">I2C LCD (16x2)</text>
+  <text x="695" y="200" text-anchor="middle" class="sub">상태·수분·온도 표시</text>
+
+  <rect x="590" y="292" width="210" height="56" rx="10" fill="#ffffff" stroke="#34D399" stroke-width="2"/>
+  <text x="695" y="316" text-anchor="middle" class="lbl">릴레이 모듈</text>
+  <text x="695" y="335" text-anchor="middle" class="sub">펌프 ON/OFF 제어</text>
+
+  <rect x="590" y="372" width="210" height="54" rx="10" fill="#ffffff" stroke="#34D399" stroke-width="2"/>
+  <text x="695" y="395" text-anchor="middle" class="lbl">워터펌프</text>
+  <text x="695" y="414" text-anchor="middle" class="sub">화분에 물 공급</text>
+
+  <!-- status LEDs -->
+  <circle cx="300" cy="465" r="18" fill="#EF4444" stroke="#B91C1C" stroke-width="2"/>
+  <circle cx="410" cy="465" r="18" fill="#F59E0B" stroke="#B45309" stroke-width="2"/>
+  <circle cx="520" cy="465" r="18" fill="#22C55E" stroke="#15803D" stroke-width="2"/>
+  <text x="300" y="503" text-anchor="middle" class="sub">빨강 · 과습</text>
+  <text x="410" y="503" text-anchor="middle" class="sub">노랑 · 건조</text>
+  <text x="520" y="503" text-anchor="middle" class="sub">초록 · 정상</text>
+
+  <!-- pin badges -->
+  <g><rect x="283" y="186" width="34" height="20" rx="5" fill="#1E293B"/><text x="300" y="200" text-anchor="middle" class="pin">A0</text></g>
+  <g><rect x="283" y="322" width="34" height="20" rx="5" fill="#1E293B"/><text x="300" y="336" text-anchor="middle" class="pin">D2</text></g>
+  <g><rect x="500" y="186" width="52" height="20" rx="5" fill="#1E293B"/><text x="526" y="200" text-anchor="middle" class="pin">A4/A5</text></g>
+  <g><rect x="503" y="300" width="40" height="20" rx="5" fill="#1E293B"/><text x="523" y="314" text-anchor="middle" class="pin">D10</text></g>
+  <g><rect x="305" y="396" width="34" height="20" rx="5" fill="#1E293B"/><text x="322" y="410" text-anchor="middle" class="pin">D3</text></g>
+  <g><rect x="393" y="396" width="34" height="20" rx="5" fill="#1E293B"/><text x="410" y="410" text-anchor="middle" class="pin">D4</text></g>
+  <g><rect x="481" y="396" width="34" height="20" rx="5" fill="#1E293B"/><text x="498" y="410" text-anchor="middle" class="pin">D5</text></g>
+</svg>

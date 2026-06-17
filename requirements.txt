@@ -1,6 +1,5 @@
 streamlit==1.55.0
 pyserial==3.5
-google-genai==1.68.0
 pandas==2.3.3
 python-dotenv==1.2.2
 watchdog==6.0.0
