@@ -52,6 +52,12 @@ if "soil_moisture" not in st.session_state:
 if "temperature" not in st.session_state:
     st.session_state.temperature = None
 
+if "last_water_time" not in st.session_state:
+    st.session_state.last_water_time = 0
+
+if "cooldown" not in st.session_state:
+    st.session_state.cooldown = 30
+
 if "status" not in st.session_state:
     st.session_state.status = None
 

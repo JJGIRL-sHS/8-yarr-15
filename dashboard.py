@@ -1,7 +1,10 @@
 from datetime import datetime
+import json
+import time
 
 import streamlit as st
 import pandas as pd
+
 
 @st.fragment(run_every="1s")
 def display_data():
@@ -81,3 +84,33 @@ def display_data():
         st.dataframe(df.sort_index(ascending=False))
 
 display_data()
+
+is_auto = st.toggle("자동 제어")
+
+@st.fragment(run_every="1s")
+def pouring_water():
+    if not st.session_state.raw_data:
+        return
+    
+    # 최신 상태를 가져옵니다.
+    df = pd.DataFrame(st.session_state.raw_data)
+    current_status = df["status"].iloc[-1]
+
+    if current_status == "THIRSTY":
+        current_time = time.time()
+        if current_time - st.session_state.last_water_time > st.session_state.cooldown:
+            ser = st.session_state.ser
+            if ser and ser.is_open:
+               payload = {
+                   "type": "pump",
+                   "action": "on",
+               } 
+               message = json.dumps(payload) + '\n'
+               ser.write(message.encode())
+
+               st.session_state.last_water_time = current_time
+               st.toast("물을 줍니다.", icon="💧")
+
+if is_auto:
+    pouring_water()
+

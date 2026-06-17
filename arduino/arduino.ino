@@ -12,7 +12,8 @@
 #define RED_LED 3     // 너무 축축함 (OVERFLOW)
 #define YELLOW_LED 4  // 너무 건조함 (THIRSTY)
 #define GREEN_LED 5   // 상태 좋음 (FINE)
-#define SOILPIN A0    // 토양 수분 센서
+#define SOIL_PIN A0    // 토양 수분 센서
+#define RELAY_PIN 10 // 릴레이 제어 핀 (펌프 ON/OFF)
 
 DHT dht(DHTPIN, DHTTYPE);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -26,6 +27,10 @@ enum class PlantStatus {
   OVERFLOW,
   FINE
 };
+
+unsigned long pumpStartTime = 0;
+const unsigned long pumpRunTime = 2000; // 2초 동안 물을 줍니다.
+bool isPumpRunning = false;
 
 void setup() {
   Serial.begin(9600);
@@ -49,11 +54,29 @@ void setup() {
   lcd.print("System Ready!");
   delay(1500);
   lcd.clear();
+
+  // 펌프 초기화
+  pinMode(RELAY_PIN, OUTPUT); // 릴레이 핀 출력 설정
+  digitalWrite(RELAY_PIN, LOW); // 처음엔 펌프 OFF
 }
 
 void loop() {
+
+  // 0. 펌프 기능
+  // 물이 넘치면 안되기 때문에 맨 위에 배치합니다!!
+
+  // 수신된 메시지를 확인하고 펌프를 작동시키거나 멈춥니다.
+  checkReceivedMessage();
+
+  if (isPumpRunning) {
+    unsigned long currentTime = millis();
+    if (currentTime - pumpStartTime >= pumpRunTime) {
+      stopPump();
+    }
+  }
+
   // 1. 센서 값 읽기 (수분과 온도만)
-  int soilMoisture = analogRead(SOILPIN);
+  int soilMoisture = analogRead(SOIL_PIN);
   float temperature = dht.readTemperature();
   if (isnan(temperature)) {
     temperature = 0.0;
@@ -82,6 +105,42 @@ PlantStatus checkPlantStatus(int soilMoisture) {
     }
 }
 
+void checkReceivedMessage() {
+    if (Serial.available() > 0) {
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, Serial);
+
+    if (!error) {
+      if (doc.containsKey("type")) {
+        String type = doc["type"];
+
+        if (type == "pump") {
+          String action = doc["action"];
+
+          if (action == "on" && !isPumpRunning) {
+            startPump();
+          } else if (action == "off") {
+            stopPump();
+          }
+        }
+        
+      }
+    }
+  }
+}
+
+void startPump() {
+  if (!isPumpRunning) {
+    isPumpRunning = true;
+    pumpStartTime = millis();
+    digitalWrite(RELAY_PIN, HIGH);
+  }
+}
+
+void stopPump() {
+  digitalWrite(RELAY_PIN, LOW);
+  isPumpRunning = false;
+}
 
 void updateLcd(int soilMoisture, float temperature, PlantStatus currentStatus) {
   unsigned long currentTime = millis();
