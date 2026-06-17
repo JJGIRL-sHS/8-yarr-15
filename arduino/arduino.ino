@@ -14,6 +14,8 @@
 #define GREEN_LED 5   // 상태 좋음 (FINE)
 #define SOIL_PIN A0    // 토양 수분 센서
 #define RELAY_PIN 10 // 릴레이 제어 핀 (펌프 ON/OFF)
+#define PUMP_ON  HIGH   // 능동-LOW 모듈이면 LOW
+#define PUMP_OFF LOW    // 능동-LOW 모듈이면 HIGH
 
 DHT dht(DHTPIN, DHTTYPE);
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -57,7 +59,7 @@ void setup() {
 
   // 펌프 초기화
   pinMode(RELAY_PIN, OUTPUT); // 릴레이 핀 출력 설정
-  digitalWrite(RELAY_PIN, LOW); // 처음엔 펌프 OFF
+  digitalWrite(RELAY_PIN, PUMP_OFF); // 처음엔 펌프 OFF
 }
 
 void loop() {
@@ -133,12 +135,12 @@ void startPump() {
   if (!isPumpRunning) {
     isPumpRunning = true;
     pumpStartTime = millis();
-    digitalWrite(RELAY_PIN, HIGH);
+    digitalWrite(RELAY_PIN, PUMP_ON);
   }
 }
 
 void stopPump() {
-  digitalWrite(RELAY_PIN, LOW);
+  digitalWrite(RELAY_PIN, PUMP_OFF);
   isPumpRunning = false;
 }
 
